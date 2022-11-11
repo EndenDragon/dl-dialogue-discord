@@ -64,12 +64,6 @@ def handle_state_prime(ctx, state_id, action, update=False):
 @discord.command(name="dialogue", description="Creates a Dragalia dialogue")
 def command_dialogue(ctx):
     da_state = make_state(ctx.freeze(), "dialogue")
-    def do_delay():
-        time.sleep(1)
-        response = handle_state_prime(ctx, da_state.state_id, None)
-        ctx.edit(response)
-    thread = threading.Thread(target=do_delay)
-    thread.start()
-    return Message(deferred=True)
+    return handle_state_prime(ctx, da_state.state_id, None)
 
 discord.set_route("/discord")
