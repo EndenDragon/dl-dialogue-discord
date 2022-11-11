@@ -1,0 +1,1 @@
+Flask-Discord-Interactions==2.1.1
