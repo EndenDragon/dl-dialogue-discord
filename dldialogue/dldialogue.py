@@ -12,6 +12,8 @@ from flask_discord_interactions import (
     Button,
 )
 import uuid
+import time
+import threading
 
 app = Flask(__name__)
 discord = DiscordInteractions(app)
@@ -28,9 +30,9 @@ def get_state(state_id):
             return single_state
     return None
 
-def make_state(dia_type):
+def make_state(ctx, dia_type):
     state_id = str(uuid.uuid4())
-    new_state = State(state_id, dia_type)
+    new_state = State(ctx, state_id, dia_type)
     state_storage.append(new_state)
     return new_state
 
@@ -48,13 +50,23 @@ def handle_state_prime(ctx, state_id, action, update=False):
     current_state = get_state(state_id)
     print(action, update, current_state.current_menu)
     response = current_state.make_response(handle_state, action, update)
-    # if update:
-    #     ctx.edit(response)
+    if update:
+        current_state.ctx.edit(response)
     return response
 
 @discord.command(name="dialogue", description="Creates a Dragalia dialogue")
 def command_dialogue(ctx):
-    da_state = make_state("dialogue")
-    return handle_state_prime(None, da_state.state_id, None)
+    da_state = make_state(ctx, "dialogue")
+    def do_delay():
+        time.sleep(1)
+        response = handle_state_prime(None, da_state.state_id, None)
+        ctx.edit(response)
+        time.sleep(10)
+        response.content = "test1234"
+        ctx.edit(response)
+    thread = threading.Thread(target=do_delay)
+    thread.start()
+    return Message(deferred=True)
+    #return 
 
 discord.set_route("/discord")

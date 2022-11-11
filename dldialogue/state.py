@@ -3,9 +3,10 @@ from flask_discord_interactions import Message, TextStyles, ActionRow, Button, B
 from .menu_mapping import menu_mapping
 
 class State:
-    def __init__(self, state_id, dia_type="dialogue"):
+    def __init__(self, ctx, state_id, dia_type="dialogue"):
         self.state_id = state_id
         self.current_menu = "home"
+        self.ctx = ctx
 
         self.type = OptionType(
             "Dialogue Kind",
