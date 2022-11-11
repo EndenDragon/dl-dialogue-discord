@@ -7,6 +7,7 @@ class State:
         self.state_id = state_id
         self.current_menu = "home"
         self.ctx = ctx
+        self.message = None
 
         self.type = OptionType(
             "Dialogue Kind",
@@ -142,8 +143,12 @@ class State:
             max = 200
         )
 
-    def make_menu_button(self, state_args, menu_id):
-        menu_name = menu_mapping[menu_id].title
+    def make_menu_button(self, state_args, menu_id, label=None):
+        menu_name = label
+        if not label:
+            menu_name = menu_mapping[menu_id].title
+            if not menu_name and menu_id.startswith("data_"):
+                menu_name = getattr(self, menu_id[len("data_"):]).description
         return Button(
             style=ButtonStyles.PRIMARY,
             custom_id=state_args + ["navmenu/" + menu_id],
@@ -162,9 +167,12 @@ class State:
         if current_menu.next_menu_ids:
             for menu_id in current_menu.next_menu_ids:
                 buttons.append(self.make_menu_button(state_args, menu_id))
+        rows = self.split_action_rows(buttons)
+        if current_menu.previous_menu_id:
+            rows = rows + [ActionRow(components=[self.make_menu_button(state_args, current_menu.previous_menu_id, "Back")])]
         return Message(
             content = "test",
-            components = self.split_action_rows(buttons),
+            components = rows,
             update = update
         )
 

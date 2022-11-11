@@ -12,8 +12,10 @@ from flask_discord_interactions import (
     Button,
 )
 import uuid
-import time
 import threading
+import time
+
+from requests import HTTPError
 
 app = Flask(__name__)
 discord = DiscordInteractions(app)
@@ -47,26 +49,27 @@ def handle_state(ctx, state_id, action):
     return handle_state_prime(ctx, state_id, action, True)
 
 def handle_state_prime(ctx, state_id, action, update=False):
+    print("honk1", ctx.token, ctx.followup_url())
     current_state = get_state(state_id)
     print(action, update, current_state.current_menu)
     response = current_state.make_response(handle_state, action, update)
     if update:
-        current_state.ctx.edit(response)
+        try:
+            current_state.ctx.edit(response)
+        except HTTPError as e:
+            print(e.response.text)
+            print(e.request.body)
     return response
 
 @discord.command(name="dialogue", description="Creates a Dragalia dialogue")
 def command_dialogue(ctx):
-    da_state = make_state(ctx, "dialogue")
+    da_state = make_state(ctx.freeze(), "dialogue")
     def do_delay():
         time.sleep(1)
-        response = handle_state_prime(None, da_state.state_id, None)
-        ctx.edit(response)
-        time.sleep(10)
-        response.content = "test1234"
+        response = handle_state_prime(ctx, da_state.state_id, None)
         ctx.edit(response)
     thread = threading.Thread(target=do_delay)
     thread.start()
     return Message(deferred=True)
-    #return 
 
 discord.set_route("/discord")
