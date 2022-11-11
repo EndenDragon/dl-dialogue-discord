@@ -42,14 +42,14 @@ def command_ping(ctx):
 
 @discord.custom_handler()
 def handle_state(ctx, state_id, action):
-    handle_state_prime(ctx, state_id, action, True)
+    return handle_state_prime(ctx, state_id, action, True)
 
 def handle_state_prime(ctx, state_id, action, update=False):
     current_state = get_state(state_id)
     print(action, update, current_state.current_menu)
     response = current_state.make_response(handle_state, action, update)
-    if update:
-        ctx.edit(response)
+    # if update:
+    #     ctx.edit(response)
     return response
 
 @discord.command(name="dialogue", description="Creates a Dragalia dialogue")
