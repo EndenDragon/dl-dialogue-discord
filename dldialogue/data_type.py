@@ -35,7 +35,7 @@ class OptionType:
             options.append(rep)
         return SelectMenu(
             placeholder = self.description,
-            custom_id = state_args + [value],
+            custom_id = state_args + [self.value],
             max_values = 1,
             options = options
         )
@@ -53,7 +53,7 @@ class StringType:
     def get_discord_repr(self, state_args):
         return TextInput(
             label = self.description,
-            custom_id = state_args + [value],
+            custom_id = state_args + [self.value],
             style = self.text_style,
             value = self.value
         )
@@ -96,9 +96,36 @@ class FloatType:
         return self.value
 
     def get_discord_repr(self, state_args):
-        return TextInput(
-            label = self.description,
-            custom_id = state_args + [value],
-            style = TextStyles.SHORT,
-            value = self.value
+        increment_lowest = -1 * 10 * self.increment
+        increment_low = -1 * self.increment
+        increment_high = self.increment
+        increment_highest = 10 * self.increment
+        return ActionRow(
+            components = [
+                Button(
+                    style = ButtonStyles.DANGER,
+                    custom_id = state_args + [increment_lowest],
+                    label = str(increment_lowest)
+                ),
+                Button(
+                    style = ButtonStyles.DANGER,
+                    custom_id = state_args + [increment_low],
+                    label = str(increment_low)
+                ),
+                Button(
+                    style = ButtonStyles.PRIMARY,
+                    custom_id = state_args + [0],
+                    label = str(self.value)
+                ),
+                Button(
+                    style = ButtonStyles.SUCCESS,
+                    custom_id = state_args + [increment_high],
+                    label = str(increment_high)
+                ),
+                Button(
+                    style = ButtonStyles.SUCCESS,
+                    custom_id = state_args + [increment_highest],
+                    label = str(increment_highest)
+                ),
+            ]
         )

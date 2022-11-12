@@ -1,5 +1,5 @@
 from .data_type import SingleOption, OptionType, StringType, BooleanType, FloatType
-from flask_discord_interactions import Message, TextStyles, ActionRow, Button, ButtonStyles
+from flask_discord_interactions import Message, TextStyles, ActionRow, Button, ButtonStyles, ComponentType
 from .menu_mapping import menu_mapping
 
 class State:
@@ -163,11 +163,14 @@ class State:
 
     def get_discord_repr_menu(self, state_args, update):
         current_menu = menu_mapping[self.current_menu]
-        buttons = []
+        components = []
         if current_menu.next_menu_ids:
             for menu_id in current_menu.next_menu_ids:
-                buttons.append(self.make_menu_button(state_args, menu_id))
-        rows = self.split_action_rows(buttons)
+                components.append(self.make_menu_button(state_args, menu_id))
+        if current_menu.active_data:
+            for data_id in current_menu.active_data:
+                components.append(getattr(self, data_id).get_discord_repr(state_args))
+        rows = self.split_action_rows(components)
         if current_menu.previous_menu_id:
             rows = rows + [ActionRow(components=[self.make_menu_button(state_args, current_menu.previous_menu_id, "Back")])]
         return Message(
@@ -180,6 +183,10 @@ class State:
         rows = []
         count = 0
         for component in components:
+            if component.type == ComponentType.ACTION_ROW:
+                rows.append(component)
+                count = 0
+                continue
             if count % 5 == 0:
                 rows.append(ActionRow(components=[]))
             rows[-1].components.append(component)
