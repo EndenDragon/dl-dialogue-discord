@@ -1,4 +1,4 @@
-from flask_discord_interactions import TextStyles, SelectMenuOption, SelectMenu, TextInput, ActionRow, Button, ButtonStyles
+from flask_discord_interactions import TextStyles, SelectMenuOption, SelectMenu, TextInput, ActionRow, Button, ButtonStyles, Modal
 
 class SingleOption:
     def __init__(self, value, name=None):
@@ -41,7 +41,7 @@ class OptionType:
             options = options
         )
 
-    def execute(self, ctx, action):
+    def execute(self, ctx, state_args, action):
         print("test", action)
         value = ctx.values[0]
         for option in self.options:
@@ -49,6 +49,7 @@ class OptionType:
                 self.value = option
                 self.default = self.value
                 break
+        return None
 
 class StringType:
     def __init__(self, id, description, **kwargs):
@@ -75,9 +76,10 @@ class StringType:
             ]
         )
     
-    def execute(self, ctx, action):
+    def execute(self, ctx, state_args, action):
         value = ctx.components[0].components[0].value
         self.value = value
+        return None
 
 class BooleanType:
     def __init__(self, id, description, **kwargs):
@@ -105,8 +107,9 @@ class BooleanType:
             ]
         )
 
-    def execute(self, ctx, action):
+    def execute(self, ctx, state_args, action):
         self.value = action == "True"
+        return None
 
 class FloatType:
     def __init__(self, id, description, **kwargs):
@@ -140,7 +143,7 @@ class FloatType:
                 ),
                 Button(
                     style = ButtonStyles.PRIMARY,
-                    custom_id = state_args + ["custom"],
+                    custom_id = state_args + ["launch_modal"],
                     label = str(self.value)
                 ),
                 Button(
@@ -156,9 +159,34 @@ class FloatType:
             ]
         )
 
-    def execute(self, ctx, action):
+    def execute(self, ctx, state_args, action):
         print("action", action)
+        print("states", state_args + [f"set"])
         if action.startswith("add/"):
-            self.value = self.value + float(action[len("add/"):])
-        elif action == "custom":
-            pass
+            self.set_value(self.value + float(action[len("add/"):]))
+        elif action == "set":
+            value = ctx.components[0].components[0].value
+            self.set_value(float(value))
+        elif action == "launch_modal":
+            return Modal(
+                state_args + [f"set"],
+                self.description,
+                [
+                    ActionRow(
+                        [
+                            TextInput(
+                                label = self.description + f" ({self.min} - {self.max})",
+                                custom_id = state_args + [f"set_value"],
+                                style = TextStyles.SHORT,
+                                value = self.value,
+                                placeholder = self.description,
+                                required = False,
+                            )
+                        ]
+                    )
+                ],
+            )
+        return None
+
+    def set_value(self, new_value):
+        self.value = min(max(self.min, new_value), self.max)

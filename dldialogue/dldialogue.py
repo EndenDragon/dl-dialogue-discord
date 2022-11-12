@@ -59,6 +59,7 @@ def handle_state_prime(ctx, state_id, action, update=False):
         except HTTPError as e:
             print(e.response.text)
             print(e.request.body)
+    print("modaler", modal)
     if modal is None:
         return response
     print(modal.encode())

@@ -172,22 +172,26 @@ class State:
             label=menu_name,
         )
 
-    def data_execute(self, ctx, data_id, action):
+    def data_execute(self, ctx, data_id, state_args, action):
         print("executing", data_id)
-        getattr(self, data_id).execute(ctx, action)
+        return getattr(self, data_id).execute(ctx, state_args, action)
 
     def make_response(self, ctx, handle_state_func, action, update=True):
         state_args = [handle_state_func, self.state_id]
         print("ctxcustomid", ctx.parse_custom_id())
+        modal = None
         if action and action.startswith("navmenu/"):
             self.current_menu = action[len("navmenu/"):]
         elif self.current_menu.startswith("data_"):
-            self.data_execute(ctx, self.current_menu[len("data_"):], action)
+            modal = self.data_execute(ctx, self.current_menu[len("data_"):], state_args, action)
         if ctx.type == InteractionType.MODAL_SUBMIT:
             prev_menu = menu_mapping[self.current_menu].previous_menu_id
             if prev_menu:
                 self.current_menu = prev_menu
-        return self.get_discord_repr_menu(state_args, update)
+        menu_msg, menu_modal = self.get_discord_repr_menu(state_args, update)
+        if modal is not None:
+            menu_modal = modal
+        return (menu_msg, menu_modal)
 
     def get_discord_repr_menu(self, state_args, update):
         current_menu = menu_mapping[self.current_menu]
@@ -201,6 +205,7 @@ class State:
         rows = self.split_action_rows(components)
         modal = None
         if current_menu.type == "modal":
+            print("staters", state_args + [self.current_menu])
             modal = Modal(
                 state_args + [self.current_menu],
                 current_menu.title,
