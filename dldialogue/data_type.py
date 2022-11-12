@@ -76,7 +76,8 @@ class StringType:
         )
     
     def execute(self, ctx, action):
-        pass
+        value = ctx.components[0].components[0].value
+        self.value = value
 
 class BooleanType:
     def __init__(self, id, description, **kwargs):

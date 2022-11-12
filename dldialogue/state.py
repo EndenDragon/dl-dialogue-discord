@@ -1,5 +1,5 @@
 from .data_type import SingleOption, OptionType, StringType, BooleanType, FloatType
-from flask_discord_interactions import Message, TextStyles, ActionRow, Button, ButtonStyles, ComponentType, Modal, TextInput
+from flask_discord_interactions import Message, TextStyles, ActionRow, Button, ButtonStyles, ComponentType, Modal, TextInput, InteractionType
 from .menu_mapping import menu_mapping
 
 class State:
@@ -183,6 +183,10 @@ class State:
             self.current_menu = action[len("navmenu/"):]
         elif self.current_menu.startswith("data_"):
             self.data_execute(ctx, self.current_menu[len("data_"):], action)
+        if ctx.type == InteractionType.MODAL_SUBMIT:
+            prev_menu = menu_mapping[self.current_menu].previous_menu_id
+            if prev_menu:
+                self.current_menu = prev_menu
         return self.get_discord_repr_menu(state_args, update)
 
     def get_discord_repr_menu(self, state_args, update):

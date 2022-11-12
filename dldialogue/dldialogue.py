@@ -61,23 +61,6 @@ def handle_state_prime(ctx, state_id, action, update=False):
             print(e.request.body)
     if modal is None:
         return response
-    # modal = Modal(
-    #     "honkhonk",
-    #     "Tell me about yourself",
-    #     [
-    #         ActionRow(
-    #             [
-    #                 TextInput(
-    #                     custom_id="name",
-    #                     label="What's your name?",
-    #                     placeholder="John Doe",
-    #                     style=TextStyles.SHORT,
-    #                     required=True,
-    #                 )
-    #             ]
-    #         )
-    #     ],
-    # )
     print(modal.encode())
     return modal
 
