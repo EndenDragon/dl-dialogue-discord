@@ -18,7 +18,8 @@ class SingleOption:
         )
 
 class OptionType:
-    def __init__(self, description, **kwargs):
+    def __init__(self, id, description, **kwargs):
+        self.id = id
         self.description = description
         self.default = kwargs.get("default", None)
         self.options = kwargs.get("options", [])
@@ -41,7 +42,8 @@ class OptionType:
         )
 
 class StringType:
-    def __init__(self, description, **kwargs):
+    def __init__(self, id, description, **kwargs):
+        self.id = id
         self.description = description
         self.default = kwargs.get("default", None)
         self.text_style = kwargs.get("text_style", TextStyles.SHORT)
@@ -51,15 +53,22 @@ class StringType:
         return self.value
 
     def get_discord_repr(self, state_args):
-        return TextInput(
-            label = self.description,
-            custom_id = state_args + [self.value],
-            style = self.text_style,
-            value = self.value
+        return ActionRow(
+            components = [
+                TextInput(
+                    label = self.description,
+                    custom_id = state_args + [self.id],
+                    style = self.text_style,
+                    value = self.value,
+                    placeholder = self.description,
+                    required = False,
+                )
+            ]
         )
 
 class BooleanType:
-    def __init__(self, description, **kwargs):
+    def __init__(self, id, description, **kwargs):
+        self.id = id
         self.description = description
         self.default = kwargs.get("default", False)
         self.value = self.default
@@ -84,7 +93,8 @@ class BooleanType:
         )
 
 class FloatType:
-    def __init__(self, description, **kwargs):
+    def __init__(self, id, description, **kwargs):
+        self.id = id
         self.description = description
         self.default = kwargs.get("default", 0)
         self.min = kwargs.get("min", -10)

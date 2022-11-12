@@ -52,14 +52,34 @@ def handle_state_prime(ctx, state_id, action, update=False):
     print("honk1", ctx.token, ctx.followup_url())
     current_state = get_state(state_id)
     print(action, update, current_state.current_menu)
-    response = current_state.make_response(handle_state, action, update)
+    response, modal = current_state.make_response(handle_state, action, update)
     if update:
         try:
             current_state.ctx.edit(response)
         except HTTPError as e:
             print(e.response.text)
             print(e.request.body)
-    return response
+    if modal is None:
+        return response
+    # modal = Modal(
+    #     "honkhonk",
+    #     "Tell me about yourself",
+    #     [
+    #         ActionRow(
+    #             [
+    #                 TextInput(
+    #                     custom_id="name",
+    #                     label="What's your name?",
+    #                     placeholder="John Doe",
+    #                     style=TextStyles.SHORT,
+    #                     required=True,
+    #                 )
+    #             ]
+    #         )
+    #     ],
+    # )
+    print(modal.encode())
+    return modal
 
 @discord.command(name="dialogue", description="Creates a Dragalia dialogue")
 def command_dialogue(ctx):

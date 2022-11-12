@@ -1,5 +1,5 @@
 from .data_type import SingleOption, OptionType, StringType, BooleanType, FloatType
-from flask_discord_interactions import Message, TextStyles, ActionRow, Button, ButtonStyles, ComponentType
+from flask_discord_interactions import Message, TextStyles, ActionRow, Button, ButtonStyles, ComponentType, Modal, TextInput
 from .menu_mapping import menu_mapping
 
 class State:
@@ -10,6 +10,7 @@ class State:
         self.message = None
 
         self.type = OptionType(
+            "type",
             "Dialogue Kind",
             default = SingleOption(dia_type),
             options = [
@@ -22,12 +23,14 @@ class State:
             ]
         )
 
-        self.name = StringType("Speaker Name")
+        self.name = StringType("name", "Speaker Name")
         self.text = StringType(
+            "text",
             "Speaker Speech",
             text_style = TextStyles.PARAGRAPH
         )
         self.f = OptionType(
+            "f",
             "Text Font",
             default = SingleOption("en", "English"),
             options = [
@@ -38,25 +41,29 @@ class State:
             ]
         )
         
-        self.nobg = BooleanType("Exclude Background Image")
-        self.bg = StringType("Background Image URL")
+        self.nobg = BooleanType("nobg", "Exclude Background Image")
+        self.bg = StringType("bg", "Background Image URL")
         self.bgx = FloatType(
+            "bgx",
             "Background X-Offset",
             min = -400,
             max = 400
         )
         self.bgy = FloatType(
+            "bgy",
             "Background Y-Offset",
             min = -400,
             max = 400
         )
         self.bgr = FloatType(
+            "bgr",
             "Background Rotation",
             min = -180,
             max = 180,
             increment = 0.1
         )
         self.bgs = FloatType(
+            "bgs",
             "Background Scale",
             default = 1,
             min = 0,
@@ -64,34 +71,39 @@ class State:
             increment = 0.1
         )
         self.bgo = FloatType(
+            "bgo",
             "Background Opacity",
             default = 1,
             min = 0,
             max = 1,
             increment = 0.01
         )
-        self.bgflipx = BooleanType("Flip Background")
+        self.bgflipx = BooleanType("bgflipx", "Flip Background")
 
-        self.noportrait = BooleanType("Exclude Portrait")
-        self.id = StringType("Character ID")
-        self.pt = StringType("Portrait Image URL")
+        self.noportrait = BooleanType("noportrait", "Exclude Portrait")
+        self.id = StringType("id", "Character ID")
+        self.pt = StringType("pt", "Portrait Image URL")
         self.x = FloatType(
+            "x",
             "Portrait X-Offset",
             min = -400,
             max = 400
         )
         self.y = FloatType(
+            "y",
             "Portrait Y-Offset",
             min = -400,
             max = 400
         )
         self.r = FloatType(
+            "r",
             "Portrait Rotation",
             min = -180,
             max = 180,
             increment = 0.1
         )
         self.s = FloatType(
+            "s",
             "Portrait Scale",
             default = 1,
             min = 0,
@@ -99,15 +111,17 @@ class State:
             increment = 0.1
         )
         self.o = FloatType(
+            "o",
             "Portrait Opacity",
             default = 1,
             min = 0,
             max = 1,
             increment = 0.01
         )
-        self.flipx = BooleanType("Flip Portrait")
+        self.flipx = BooleanType("flipx", "Flip Portrait")
 
         self.e = OptionType(
+            "e",
             "Emotion Type",
             default = SingleOption("none"),
             options = [
@@ -125,6 +139,7 @@ class State:
             ]
         )
         self.es = OptionType(
+            "es",
             "Emotion Direction",
             default = SingleOption("l", "Left"),
             options = [
@@ -133,11 +148,13 @@ class State:
             ]
         )
         self.ex = FloatType(
+            "ex",
             "Emotion X-Offset",
             min = -200,
             max = 200
         )
         self.ey = FloatType(
+            "ey",
             "Emotion Y-Offset",
             min = -200,
             max = 200
@@ -171,13 +188,21 @@ class State:
             for data_id in current_menu.active_data:
                 components.append(getattr(self, data_id).get_discord_repr(state_args))
         rows = self.split_action_rows(components)
+        modal = None
+        if current_menu.type == "modal":
+            modal = Modal(
+                state_args + [self.current_menu],
+                current_menu.title,
+                rows
+            )
+            rows = []
         if current_menu.previous_menu_id:
             rows = rows + [ActionRow(components=[self.make_menu_button(state_args, current_menu.previous_menu_id, "Back")])]
-        return Message(
+        return (Message(
             content = "test",
             components = rows,
             update = update
-        )
+        ), modal)
 
     def split_action_rows(self, components):
         rows = []

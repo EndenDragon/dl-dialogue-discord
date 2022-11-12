@@ -14,12 +14,29 @@ menu_mapping = {
 
     "text_main": Menu(
         "Text Settings",
+        type = "embed",
+        next_menus = [
+            "text_sub",
+            "text_font",
+        ],
+        previous_menu = "home",
+    ),
+    "text_sub": Menu(
+        "Text Contents",
         type = "modal",
         active_data = [
             "name",
-            "text",
+            "text"
+        ],
+        previous_menu = "text_main",
+    ),
+    "text_font": Menu(
+        "Text Font",
+        type = "embed",
+        active_data = [
             "f"
         ],
+        previous_menu = "text_main",
     ),
 
     "background_main": Menu(
@@ -43,7 +60,8 @@ menu_mapping = {
         active_data = ["nobg"]
     ),
     "data_bg": Menu(
-        type = "embed",
+        "Background Image URL",
+        type = "modal",
         previous_menu = "background_main",
         active_data = ["bg"]
     ),
@@ -100,12 +118,14 @@ menu_mapping = {
         active_data = ["noportrait"]
     ),
     "data_id": Menu(
-        type = "embed",
+        "Character ID",
+        type = "modal",
         previous_menu = "portrait_main",
         active_data = ["id"]
     ),
     "data_pt": Menu(
-        type = "embed",
+        "Portrait Image URL",
+        type = "modal",
         previous_menu = "portrait_main",
         active_data = ["pt"]
     ),
