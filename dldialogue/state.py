@@ -1,8 +1,14 @@
 from .data_type import SingleOption, OptionType, StringType, BooleanType, FloatType
-from flask_discord_interactions import Message, TextStyles, ActionRow, Button, ButtonStyles, ComponentType, Modal, TextInput, InteractionType
+from flask_discord_interactions import Message, TextStyles, ActionRow, Button, ButtonStyles, ComponentType, Modal, TextInput, InteractionType, Embed
 from .menu_mapping import menu_mapping
+import urllib.parse
 
 class State:
+    PARAMS = [
+        "nobg", "bg", "bgx", "bgy", "bgr", "bgs", "bgo", "bgflipx", "noportrait",
+        "id", "pt", "x", "y", "r", "s", "o", "flipx", "f", "e", "es", "ex", "ey",
+    ]
+
     def __init__(self, ctx, state_id, dia_type="dialogue"):
         self.state_id = state_id
         self.current_menu = "home"
@@ -23,11 +29,17 @@ class State:
             ]
         )
 
-        self.name = StringType("name", "Speaker Name")
+        self.name = StringType(
+            "name",
+            "Speaker Name",
+            default = "Sarisse",
+            required = True
+        )
         self.text = StringType(
             "text",
             "Speaker Speech",
-            text_style = TextStyles.PARAGRAPH
+            text_style = TextStyles.PARAGRAPH,
+            default = "With a bang, I'm on the scene!"
         )
         self.f = OptionType(
             "f",
@@ -45,26 +57,26 @@ class State:
         self.bg = StringType("bg", "Background Image URL")
         self.bgx = FloatType(
             "bgx",
-            "Background X-Offset",
+            "X-Offset",
             min = -400,
             max = 400
         )
         self.bgy = FloatType(
             "bgy",
-            "Background Y-Offset",
+            "Y-Offset",
             min = -400,
             max = 400
         )
         self.bgr = FloatType(
             "bgr",
-            "Background Rotation",
+            "Rotation",
             min = -180,
             max = 180,
             increment = 0.1
         )
         self.bgs = FloatType(
             "bgs",
-            "Background Scale",
+            "Scale",
             default = 1,
             min = 0,
             max = 3,
@@ -72,7 +84,7 @@ class State:
         )
         self.bgo = FloatType(
             "bgo",
-            "Background Opacity",
+            "Opacity",
             default = 1,
             min = 0,
             max = 1,
@@ -82,29 +94,33 @@ class State:
 
         self.noportrait = BooleanType("noportrait", "Exclude Portrait")
         self.id = StringType("id", "Character ID")
-        self.pt = StringType("pt", "Portrait Image URL")
+        self.pt = StringType(
+            "pt",
+            "Portrait Image URL",
+            default = "https://dragalialost.wiki/images/1/16/100029_05_base_portrait.png"
+        )
         self.x = FloatType(
             "x",
-            "Portrait X-Offset",
+            "X-Offset",
             min = -400,
             max = 400
         )
         self.y = FloatType(
             "y",
-            "Portrait Y-Offset",
+            "Y-Offset",
             min = -400,
             max = 400
         )
         self.r = FloatType(
             "r",
-            "Portrait Rotation",
+            "Rotation",
             min = -180,
             max = 180,
             increment = 0.1
         )
         self.s = FloatType(
             "s",
-            "Portrait Scale",
+            "Scale",
             default = 1,
             min = 0,
             max = 3,
@@ -112,7 +128,7 @@ class State:
         )
         self.o = FloatType(
             "o",
-            "Portrait Opacity",
+            "Opacity",
             default = 1,
             min = 0,
             max = 1,
@@ -122,7 +138,7 @@ class State:
 
         self.e = OptionType(
             "e",
-            "Emotion Type",
+            "Type",
             default = SingleOption("none"),
             options = [
                 SingleOption("none"),
@@ -140,7 +156,7 @@ class State:
         )
         self.es = OptionType(
             "es",
-            "Emotion Direction",
+            "Direction",
             default = SingleOption("l", "Left"),
             options = [
                 SingleOption("l", "Left"),
@@ -149,13 +165,13 @@ class State:
         )
         self.ex = FloatType(
             "ex",
-            "Emotion X-Offset",
+            "X-Offset",
             min = -200,
             max = 200
         )
         self.ey = FloatType(
             "ey",
-            "Emotion Y-Offset",
+            "Y-Offset",
             min = -200,
             max = 200
         )
@@ -193,6 +209,30 @@ class State:
             menu_modal = modal
         return (menu_msg, menu_modal)
 
+    def url_encode(self, string):
+        return urllib.parse.quote(string, safe="")
+
+    def get_embed(self):
+        menu_title = menu_mapping[self.current_menu].title
+        if not menu_title and self.current_menu.startswith("data_"):
+            menu_title = getattr(self, self.current_menu[len("data_"):]).description
+        image_url = f"http://api.dldialogue.xyz/dialogue/{self.url_encode(self.name.value)}/{self.url_encode(self.text.value)}"
+        query = {}
+        for param in State.PARAMS:
+            val = getattr(self, param)
+            if val.value is None or val.value == False:
+                continue
+            query[param] = str(val)
+        image_url = image_url + "?" + urllib.parse.urlencode(query)
+        return Embed(
+            title = f"Dragalia Lost Dialogue Screen Generator ({self.type.value.name})",
+            description = "Powered by dldialogue.xyz",
+            url = "https://github.com/EndenDragon/dl-dialogue-discord", # TODO: change to invite link
+            color = 2728830,
+            image = {"url": image_url},
+            footer = {"text": menu_title}
+        )
+
     def get_discord_repr_menu(self, state_args, update):
         current_menu = menu_mapping[self.current_menu]
         components = []
@@ -215,7 +255,8 @@ class State:
         if current_menu.previous_menu_id:
             rows = rows + [ActionRow(components=[self.make_menu_button(state_args, current_menu.previous_menu_id, "Back", ButtonStyles.SECONDARY)])]
         return (Message(
-            content = "test",
+            #content = "test",
+            embed = self.get_embed(),
             components = rows,
             update = update
         ), modal)

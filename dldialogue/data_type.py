@@ -26,7 +26,9 @@ class OptionType:
         self.value = self.default
 
     def __str__(self):
-        return self.value
+        if not self.value:
+            return None
+        return self.value.value
 
     def get_discord_repr(self, state_args):
         options = []
@@ -57,6 +59,7 @@ class StringType:
         self.description = description
         self.default = kwargs.get("default", None)
         self.text_style = kwargs.get("text_style", TextStyles.SHORT)
+        self.required = kwargs.get("required", False)
         self.value = self.default
     
     def __str__(self):
@@ -71,7 +74,7 @@ class StringType:
                     style = self.text_style,
                     value = self.value,
                     placeholder = self.description,
-                    required = False,
+                    required = self.required,
                 )
             ]
         )
@@ -89,7 +92,7 @@ class BooleanType:
         self.value = self.default
     
     def __str__(self):
-        return self.value
+        return str(self.value)
 
     def get_discord_repr(self, state_args):
         return ActionRow(
@@ -122,7 +125,7 @@ class FloatType:
         self.value = self.default
 
     def __str__(self):
-        return self.value
+        return str(self.value)
 
     def get_discord_repr(self, state_args):
         increment_lowest = -1 * 10 * self.increment
@@ -178,7 +181,7 @@ class FloatType:
                                 label = self.description + f" ({self.min} - {self.max})",
                                 custom_id = state_args + [f"set_value"],
                                 style = TextStyles.SHORT,
-                                value = self.value,
+                                value = str(self.value),
                                 placeholder = self.description,
                                 required = False,
                             )
