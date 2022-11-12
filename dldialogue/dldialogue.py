@@ -52,7 +52,7 @@ def handle_state_prime(ctx, state_id, action, update=False):
     print("honk1", ctx.token, ctx.followup_url())
     current_state = get_state(state_id)
     print(action, update, current_state.current_menu)
-    response, modal = current_state.make_response(handle_state, action, update)
+    response, modal = current_state.make_response(ctx, handle_state, action, update)
     if update:
         try:
             current_state.ctx.edit(response)

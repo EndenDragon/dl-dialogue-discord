@@ -160,22 +160,29 @@ class State:
             max = 200
         )
 
-    def make_menu_button(self, state_args, menu_id, label=None):
+    def make_menu_button(self, state_args, menu_id, label=None, style=ButtonStyles.PRIMARY):
         menu_name = label
         if not label:
             menu_name = menu_mapping[menu_id].title
             if not menu_name and menu_id.startswith("data_"):
                 menu_name = getattr(self, menu_id[len("data_"):]).description
         return Button(
-            style=ButtonStyles.PRIMARY,
+            style=style,
             custom_id=state_args + ["navmenu/" + menu_id],
             label=menu_name,
         )
 
-    def make_response(self, handle_state_func, action, update=True):
+    def data_execute(self, ctx, data_id, action):
+        print("executing", data_id)
+        getattr(self, data_id).execute(ctx, action)
+
+    def make_response(self, ctx, handle_state_func, action, update=True):
         state_args = [handle_state_func, self.state_id]
+        print("ctxcustomid", ctx.parse_custom_id())
         if action and action.startswith("navmenu/"):
             self.current_menu = action[len("navmenu/"):]
+        elif self.current_menu.startswith("data_"):
+            self.data_execute(ctx, self.current_menu[len("data_"):], action)
         return self.get_discord_repr_menu(state_args, update)
 
     def get_discord_repr_menu(self, state_args, update):
@@ -197,7 +204,7 @@ class State:
             )
             rows = []
         if current_menu.previous_menu_id:
-            rows = rows + [ActionRow(components=[self.make_menu_button(state_args, current_menu.previous_menu_id, "Back")])]
+            rows = rows + [ActionRow(components=[self.make_menu_button(state_args, current_menu.previous_menu_id, "Back", ButtonStyles.SECONDARY)])]
         return (Message(
             content = "test",
             components = rows,

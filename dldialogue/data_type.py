@@ -41,6 +41,15 @@ class OptionType:
             options = options
         )
 
+    def execute(self, ctx, action):
+        print("test", action)
+        value = ctx.values[0]
+        for option in self.options:
+            if option.value == value:
+                self.value = option
+                self.default = self.value
+                break
+
 class StringType:
     def __init__(self, id, description, **kwargs):
         self.id = id
@@ -65,6 +74,9 @@ class StringType:
                 )
             ]
         )
+    
+    def execute(self, ctx, action):
+        pass
 
 class BooleanType:
     def __init__(self, id, description, **kwargs):
@@ -80,17 +92,20 @@ class BooleanType:
         return ActionRow(
             components = [
                 Button(
-                    style = ButtonStyles.PRIMARY,
+                    style = ButtonStyles.SUCCESS,
                     custom_id = state_args + [True],
                     label = "Yes"
                 ),
                 Button(
-                    style = ButtonStyles.PRIMARY,
+                    style = ButtonStyles.DANGER,
                     custom_id = state_args + [False],
                     label = "No"
                 )
             ]
         )
+
+    def execute(self, ctx, action):
+        self.value = action == "True"
 
 class FloatType:
     def __init__(self, id, description, **kwargs):
@@ -114,28 +129,35 @@ class FloatType:
             components = [
                 Button(
                     style = ButtonStyles.DANGER,
-                    custom_id = state_args + [increment_lowest],
+                    custom_id = state_args + [f"add/{increment_lowest}"],
                     label = str(increment_lowest)
                 ),
                 Button(
                     style = ButtonStyles.DANGER,
-                    custom_id = state_args + [increment_low],
+                    custom_id = state_args + [f"add/{increment_low}"],
                     label = str(increment_low)
                 ),
                 Button(
                     style = ButtonStyles.PRIMARY,
-                    custom_id = state_args + [0],
+                    custom_id = state_args + ["custom"],
                     label = str(self.value)
                 ),
                 Button(
                     style = ButtonStyles.SUCCESS,
-                    custom_id = state_args + [increment_high],
-                    label = str(increment_high)
+                    custom_id = state_args + [f"add/{increment_high}"],
+                    label = "+" + str(increment_high)
                 ),
                 Button(
                     style = ButtonStyles.SUCCESS,
-                    custom_id = state_args + [increment_highest],
-                    label = str(increment_highest)
+                    custom_id = state_args + [f"add/{increment_highest}"],
+                    label = "+" + str(increment_highest)
                 ),
             ]
         )
+
+    def execute(self, ctx, action):
+        print("action", action)
+        if action.startswith("add/"):
+            self.value = self.value + float(action[len("add/"):])
+        elif action == "custom":
+            pass

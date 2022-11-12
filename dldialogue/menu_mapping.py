@@ -16,22 +16,30 @@ menu_mapping = {
         "Text Settings",
         type = "embed",
         next_menus = [
-            "text_sub",
-            "text_font",
+            "data_name",
+            "data_text",
+            "data_f",
         ],
         previous_menu = "home",
     ),
-    "text_sub": Menu(
-        "Text Contents",
+    "data_name": Menu(
+        "Name",
         type = "modal",
         active_data = [
             "name",
+        ],
+        previous_menu = "text_main",
+    ),
+    "data_text": Menu(
+        "Text",
+        type = "modal",
+        active_data = [
             "text"
         ],
         previous_menu = "text_main",
     ),
-    "text_font": Menu(
-        "Text Font",
+    "data_f": Menu(
+        "Font",
         type = "embed",
         active_data = [
             "f"
