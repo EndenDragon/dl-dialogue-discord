@@ -59,11 +59,9 @@ def handle_state(ctx, state_id, action):
     return handle_state_prime(ctx, state_id, action, True)
 
 def handle_state_prime(ctx, state_id, action, update=False):
-    print("honk1", ctx.token, ctx.followup_url())
     current_state = get_state(state_id)
     if ctx.author.id != current_state.ctx.author.id:
         return Message(content=f"This is not your dialogue, <@{ctx.author.id}>!", ephemeral=True)
-    print(action, update, current_state.current_menu)
     response, modal = current_state.make_response(ctx, handle_state, action, update)
     if update:
         try:
@@ -71,10 +69,8 @@ def handle_state_prime(ctx, state_id, action, update=False):
         except HTTPError as e:
             print(e.response.text)
             print(e.request.body)
-    print("modaler", modal)
     if modal is None:
         return response
-    print(modal.encode())
     return modal
 
 def handle_command(ctx, dia_type, defaults=None):

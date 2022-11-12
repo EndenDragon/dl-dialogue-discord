@@ -187,12 +187,10 @@ class State:
         )
 
     def data_execute(self, ctx, data_id, state_args, action):
-        print("executing", data_id)
         return getattr(self, data_id).execute(ctx, state_args, action)
 
     def make_response(self, ctx, handle_state_func, action, update=True):
         state_args = [handle_state_func, self.state_id]
-        print("ctxcustomid", ctx.parse_custom_id())
         modal = None
         if action and action.startswith("navmenu/"):
             self.current_menu = action[len("navmenu/"):]
@@ -227,7 +225,7 @@ class State:
         return Embed(
             title = f"Dragalia Lost Dialogue Screen Generator ({self.type.value.name})",
             description = "Powered by dldialogue.xyz",
-            url = "https://github.com/EndenDragon/dl-dialogue-discord", # TODO: change to invite link
+            url = "https://discord.com/oauth2/authorize?client_id=1040955921792245781&scope=bot",
             color = 2728830,
             image = {"url": image_url},
             footer = {"text": menu_title}
@@ -245,7 +243,6 @@ class State:
         rows = self.split_action_rows(components)
         modal = None
         if current_menu.type == "modal":
-            print("staters", state_args + [self.current_menu])
             modal = Modal(
                 state_args + [self.current_menu],
                 current_menu.title,

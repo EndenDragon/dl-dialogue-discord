@@ -44,7 +44,6 @@ class OptionType:
         )
 
     def execute(self, ctx, state_args, action):
-        print("test", action)
         value = ctx.values[0]
         for option in self.options:
             if option.value == value:
@@ -163,8 +162,6 @@ class FloatType:
         )
 
     def execute(self, ctx, state_args, action):
-        print("action", action)
-        print("states", state_args + [f"set"])
         if action.startswith("add/"):
             self.set_value(self.value + float(action[len("add/"):]))
         elif action == "set":
