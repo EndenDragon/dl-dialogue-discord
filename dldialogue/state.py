@@ -32,14 +32,13 @@ class State:
         self.name = StringType(
             "name",
             "Speaker Name",
-            default = "Sarisse",
             required = True
         )
         self.text = StringType(
             "text",
             "Speaker Speech",
             text_style = TextStyles.PARAGRAPH,
-            default = "With a bang, I'm on the scene!"
+            required = True
         )
         self.f = OptionType(
             "f",
@@ -97,7 +96,6 @@ class State:
         self.pt = StringType(
             "pt",
             "Portrait Image URL",
-            default = "https://dragalialost.wiki/images/1/16/100029_05_base_portrait.png"
         )
         self.x = FloatType(
             "x",
@@ -210,13 +208,15 @@ class State:
         return (menu_msg, menu_modal)
 
     def url_encode(self, string):
+        if not string:
+            return ""
         return urllib.parse.quote(string, safe="")
 
     def get_embed(self):
         menu_title = menu_mapping[self.current_menu].title
         if not menu_title and self.current_menu.startswith("data_"):
             menu_title = getattr(self, self.current_menu[len("data_"):]).description
-        image_url = f"http://api.dldialogue.xyz/dialogue/{self.url_encode(self.name.value)}/{self.url_encode(self.text.value)}"
+        image_url = f"http://api.dldialogue.xyz/{self.type.value.value}/{self.url_encode(self.name.value)}/{self.url_encode(self.text.value)}"
         query = {}
         for param in State.PARAMS:
             val = getattr(self, param)
