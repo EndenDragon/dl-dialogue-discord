@@ -214,7 +214,7 @@ class State:
         menu_title = menu_mapping[self.current_menu].title
         if not menu_title and self.current_menu.startswith("data_"):
             menu_title = getattr(self, self.current_menu[len("data_"):]).description
-        image_url = f"http://api.dldialogue.xyz/{self.type.value.value}/{self.url_encode(self.name.value)}/{self.url_encode(self.text.value)}"
+        image_url = f"https://dl-dialogue-api.corr.in/{self.type.value.value}/{self.url_encode(self.name.value)}/{self.url_encode(self.text.value)}"
         query = {}
         for param in State.PARAMS:
             val = getattr(self, param)
