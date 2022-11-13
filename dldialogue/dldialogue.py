@@ -26,9 +26,11 @@ app.config["DISCORD_CLIENT_ID"] = config["DISCORD_CLIENT_ID"]
 app.config["DISCORD_PUBLIC_KEY"] = config["DISCORD_PUBLIC_KEY"]
 app.config["DISCORD_CLIENT_SECRET"] = config["DISCORD_CLIENT_SECRET"]
 
+image_cache = deque(maxlen=50)
+
 def make_state(ctx, dia_type):
     state_id = str(uuid.uuid4())
-    new_state = State(ctx, state_id, dia_type)
+    new_state = State(ctx, state_id, image_cache, dia_type)
     save_state(app, new_state)
     return new_state
 
@@ -52,7 +54,7 @@ def handle_state(ctx, state_id, action):
     return handle_state_prime(ctx, state_id, action, True)
 
 def handle_state_prime(ctx, state_id, action, update=False):
-    current_state = get_state(state_id)
+    current_state = get_state(state_id, image_cache)
     if current_state is None:
         return Message(content=f"Sorry this dialogue has been expired, <@{ctx.author.id}>. Please create a new one!", ephemeral=True)
     if ctx.author.id != current_state.ctx.author.id:

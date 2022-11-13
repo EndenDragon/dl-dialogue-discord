@@ -1,7 +1,10 @@
 from .data_type import SingleOption, OptionType, StringType, BooleanType, FloatType
 from flask_discord_interactions import Message, TextStyles, ActionRow, Button, ButtonStyles, ComponentType, Modal, TextInput, InteractionType, Embed
 from .menu_mapping import menu_mapping
+from .image_cache_item import ImageCacheItem
 import urllib.parse
+import requests
+import io
 
 class State:
     URL_PROPS = ["type", "name", "text"]
@@ -10,10 +13,11 @@ class State:
         "id", "pt", "x", "y", "r", "s", "o", "flipx", "f", "e", "es", "ex", "ey",
     ]
 
-    def __init__(self, ctx, state_id, dia_type="dialogue"):
+    def __init__(self, ctx, state_id, image_cache, dia_type="dialogue"):
         self.state_id = state_id
         self.current_menu = "home"
         self.ctx = ctx
+        self.image_cache = image_cache
 
         self.type = OptionType(
             "type",
@@ -222,14 +226,32 @@ class State:
                 continue
             query[param] = str(val)
         image_url = image_url + "?" + urllib.parse.urlencode(query)
-        return Embed(
+        file_obj = self.get_image_file_object(image_url)
+        file_return = None
+        if file_obj is not None:
+            image_url = "attachment://dialogue.png"
+            file_return = ("dialogue.png", file_obj, "image/png")
+        return (Embed(
             title = f"Dragalia Lost Dialogue Screen Generator ({self.type.value.name})",
             description = "Powered by dldialogue.xyz",
             url = "https://discord.com/oauth2/authorize?client_id=1040955921792245781&scope=bot",
             color = 2728830,
             image = {"url": image_url},
             footer = {"text": menu_title}
-        )
+        ), file_return)
+
+    def get_image_file_object(self, url):
+        for cache in self.image_cache:
+            if cache.url == url:
+                return cache.get_file_object()
+        print(url)
+        response = requests.get(url)
+        if response.status_code < 200 or response.status_code >= 300 or response.headers.get("Content-Type", None) != "image/png":
+            return None
+        file_obj = io.BytesIO(response.content)
+        file_obj.seek(0)
+        self.image_cache.append(ImageCacheItem(url, file_obj))
+        return file_obj
 
     def get_discord_repr_menu(self, state_args, update):
         current_menu = menu_mapping[self.current_menu]
@@ -251,11 +273,12 @@ class State:
             rows = []
         if current_menu.previous_menu_id:
             rows = rows + [ActionRow(components=[self.make_menu_button(state_args, current_menu.previous_menu_id, "Back", ButtonStyles.SECONDARY)])]
+        embed, file_response = self.get_embed()
         return (Message(
-            #content = "test",
-            embed = self.get_embed(),
+            embed = embed,
             components = rows,
-            update = update
+            update = update,
+            file = file_response
         ), modal)
 
     def split_action_rows(self, components):

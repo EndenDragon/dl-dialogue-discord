@@ -8,7 +8,7 @@ from flask_discord_interactions import Context
 def get_path(state_id):
     return tempfile.gettempdir() + f"/dldia_{state_id}.json"
 
-def get_state(state_id):
+def get_state(state_id, image_cache):
     path = get_path(state_id)
     if not os.path.isfile(path):
         return None
@@ -24,7 +24,7 @@ def get_state(state_id):
     ctx.frozen_auth_headers = contents["ctx"]["auth_headers"]
 
     # state
-    state = State(ctx, contents["state_id"])
+    state = State(ctx, contents["state_id"], image_cache)
     state.current_menu = contents["state"]["current_menu"]
     for key, val in contents["state"]["props"].items():
         getattr(state, key).set_from_string(val)
