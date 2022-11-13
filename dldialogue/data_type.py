@@ -26,9 +26,18 @@ class OptionType:
         self.value = self.default
 
     def __str__(self):
-        if not self.value:
-            return None
+        if self.value is None:
+            return ""
         return self.value.value
+
+    def set_from_string(self, value):
+        if value is "":
+            self.value = self.default
+            return
+        for option in self.options:
+            if option.value == value:
+                self.value = option
+                break
 
     def get_discord_repr(self, state_args):
         options = []
@@ -62,7 +71,16 @@ class StringType:
         self.value = self.default
     
     def __str__(self):
+        if self.value is None:
+            return ""
         return self.value
+
+    def set_from_string(self, value):
+        print("honk", value)
+        if value == "":
+            self.value = None
+        else:
+            self.value = value
 
     def get_discord_repr(self, state_args):
         return ActionRow(
@@ -92,6 +110,9 @@ class BooleanType:
     
     def __str__(self):
         return str(self.value)
+
+    def set_from_string(self, value):
+        self.value = value == "True"
 
     def get_discord_repr(self, state_args):
         return ActionRow(
@@ -125,6 +146,9 @@ class FloatType:
 
     def __str__(self):
         return str(self.value)
+
+    def set_from_string(self, value):
+        self.value = float(value)
 
     def get_discord_repr(self, state_args):
         increment_lowest = -1 * 10 * self.increment

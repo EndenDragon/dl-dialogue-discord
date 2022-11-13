@@ -4,6 +4,7 @@ from .menu_mapping import menu_mapping
 import urllib.parse
 
 class State:
+    URL_PROPS = ["type", "name", "text"]
     PARAMS = [
         "nobg", "bg", "bgx", "bgy", "bgr", "bgs", "bgo", "bgflipx", "noportrait",
         "id", "pt", "x", "y", "r", "s", "o", "flipx", "f", "e", "es", "ex", "ey",
@@ -13,7 +14,6 @@ class State:
         self.state_id = state_id
         self.current_menu = "home"
         self.ctx = ctx
-        self.message = None
 
         self.type = OptionType(
             "type",

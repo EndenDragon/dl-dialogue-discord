@@ -3,6 +3,7 @@ from .state import State
 from flask import Flask
 from collections import deque
 from .data_type import SingleOption
+from .state_loader import save_state, get_state
 from flask_discord_interactions import (
     DiscordInteractions,
     Message,
@@ -25,18 +26,19 @@ app.config["DISCORD_CLIENT_ID"] = config["DISCORD_CLIENT_ID"]
 app.config["DISCORD_PUBLIC_KEY"] = config["DISCORD_PUBLIC_KEY"]
 app.config["DISCORD_CLIENT_SECRET"] = config["DISCORD_CLIENT_SECRET"]
 
-state_storage = deque(maxlen=50)
+#state_storage = deque(maxlen=50)
 
-def get_state(state_id):
-    for single_state in state_storage:
-        if single_state.state_id == state_id:
-            return single_state
-    return None
+# def get_state(state_id):
+#     for single_state in state_storage:
+#         if single_state.state_id == state_id:
+#             return single_state
+#     return None
 
 def make_state(ctx, dia_type):
     state_id = str(uuid.uuid4())
     new_state = State(ctx, state_id, dia_type)
-    state_storage.append(new_state)
+    save_state(app, new_state)
+    #state_storage.append(new_state)
     return new_state
 
 @discord.command(name="ping", description="Send a ping")
@@ -54,12 +56,14 @@ def command_ping(ctx):
         "f": SingleOption("ja", "Japanese"),
     })
 
-@discord.custom_handler()
+@discord.custom_handler("dldia")
 def handle_state(ctx, state_id, action):
     return handle_state_prime(ctx, state_id, action, True)
 
 def handle_state_prime(ctx, state_id, action, update=False):
     current_state = get_state(state_id)
+    if current_state is None:
+        return Message(content=f"Sorry this dialogue has been expired, <@{ctx.author.id}>. Please create a new one!", ephemeral=True)
     if ctx.author.id != current_state.ctx.author.id:
         return Message(content=f"This is not your dialogue, <@{ctx.author.id}>!", ephemeral=True)
     response, modal = current_state.make_response(ctx, handle_state, action, update)
@@ -69,6 +73,7 @@ def handle_state_prime(ctx, state_id, action, update=False):
         except HTTPError as e:
             print(e.response.text)
             print(e.request.body)
+    save_state(app, current_state)
     if modal is None:
         return response
     return modal
@@ -78,6 +83,7 @@ def handle_command(ctx, dia_type, defaults=None):
     if defaults:
         for key, val in defaults.items():
             getattr(da_state, key).value = val
+    save_state(app, da_state)
     return handle_state_prime(ctx, da_state.state_id, None)
 
 @discord.command(name="dialogue", description="Creates a Dragalia dialogue!")
