@@ -76,7 +76,6 @@ class StringType:
         return self.value
 
     def set_from_string(self, value):
-        print("honk", value)
         if value == "":
             self.value = None
         else:
