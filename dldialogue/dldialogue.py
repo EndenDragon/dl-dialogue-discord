@@ -1,6 +1,6 @@
 from config import config
 from .state import State
-from flask import Flask
+from flask import Flask, redirect
 from collections import deque
 from .data_type import SingleOption
 from .state_loader import save_state, get_state
@@ -25,6 +25,10 @@ discord = DiscordInteractions(app)
 app.config["DISCORD_CLIENT_ID"] = config["DISCORD_CLIENT_ID"]
 app.config["DISCORD_PUBLIC_KEY"] = config["DISCORD_PUBLIC_KEY"]
 app.config["DISCORD_CLIENT_SECRET"] = config["DISCORD_CLIENT_SECRET"]
+
+@app.route("/invite")
+def invite():
+    return redirect("https://discord.com/oauth2/authorize?client_id=1040955921792245781&scope=bot")
 
 def make_state(ctx, dia_type):
     state_id = str(uuid.uuid4())
