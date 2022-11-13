@@ -26,19 +26,10 @@ app.config["DISCORD_CLIENT_ID"] = config["DISCORD_CLIENT_ID"]
 app.config["DISCORD_PUBLIC_KEY"] = config["DISCORD_PUBLIC_KEY"]
 app.config["DISCORD_CLIENT_SECRET"] = config["DISCORD_CLIENT_SECRET"]
 
-#state_storage = deque(maxlen=50)
-
-# def get_state(state_id):
-#     for single_state in state_storage:
-#         if single_state.state_id == state_id:
-#             return single_state
-#     return None
-
 def make_state(ctx, dia_type):
     state_id = str(uuid.uuid4())
     new_state = State(ctx, state_id, dia_type)
     save_state(app, new_state)
-    #state_storage.append(new_state)
     return new_state
 
 @discord.command(name="ping", description="Send a ping")
