@@ -1,4 +1,5 @@
 from flask_discord_interactions import TextStyles, SelectMenuOption, SelectMenu, TextInput, ActionRow, Button, ButtonStyles, Modal
+from flask import abort
 
 class SingleOption:
     def __init__(self, value, name=None):
@@ -91,6 +92,7 @@ class StringType:
                     value = self.value,
                     placeholder = self.description,
                     required = self.required,
+                    max_length = 300,
                 )
             ]
         )
@@ -189,7 +191,10 @@ class FloatType:
             self.set_value(self.value + float(action[len("add/"):]))
         elif action == "set":
             value = ctx.components[0].components[0].value
-            self.set_value(float(value))
+            try:
+                self.set_value(float(value))
+            except ValueError:
+                abort(400)
         elif action == "launch_modal":
             return Modal(
                 state_args + [f"set"],
@@ -204,6 +209,7 @@ class FloatType:
                                 value = str(self.value),
                                 placeholder = self.description,
                                 required = False,
+                                max_length = 8,
                             )
                         ]
                     )
